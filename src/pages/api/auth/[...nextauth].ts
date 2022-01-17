@@ -1,6 +1,5 @@
 import NextAuth from "next-auth";
 import GithubProvider from "next-auth/providers/github";
-import { signIn } from "next-auth/react";
 
 import { query as q } from "faunadb";
 import { fauna } from "../../../services/fauna";
@@ -22,7 +21,6 @@ export default NextAuth({
     async signIn({ user, account, profile }) {
       try {
         await fauna.query(
-          //q.Create(q.Collection("users"), { data: { email: user.email } })
           q.If(
             q.Not(
               q.Exists(
@@ -34,9 +32,7 @@ export default NextAuth({
           )
         );
         return true;
-      } catch (err) {
-        console.log("asasas", err);
-
+      } catch {
         return false;
       }
     },
