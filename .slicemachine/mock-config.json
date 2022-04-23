@@ -1,0 +1,15 @@
+{
+  "_cts": {
+    "react-posts": {
+      "Title": {
+        "config": {
+          "patternType": "HEADING",
+          "blocks": 1
+        }
+      }
+    }
+  },
+  "slices": {
+    "BlogPosts": {}
+  }
+}
