@@ -4,7 +4,19 @@ import { createClient } from "../../services/prismic";
 
 import styles from "./styles.module.scss";
 
-export default function Posts() {
+type Posts = {
+  slug: string;
+  title: string;
+  content: string;
+  updatedAt: string;
+};
+
+type PostsProps = {
+  posts: Posts[];
+};
+
+export default function Posts({ posts }: PostsProps) {
+  console.log(posts);
   return (
     <>
       <Head>
@@ -13,30 +25,13 @@ export default function Posts() {
 
       <main className={styles.container}>
         <div className={styles.posts}>
-          <a href="">
-            <time>12 de augusto</time>
-            <strong>Criando Sempre Inovações na área</strong>
-            <p>
-              Vem comigo vamos aprender a organizar e desestruturar novas
-              carreiras
-            </p>
-          </a>
-          <a href="">
-            <time>12 de augusto</time>
-            <strong>Criando Sempre Inovações na área</strong>
-            <p>
-              Vem comigo vamos aprender a organizar e desestruturar novas
-              carreiras
-            </p>
-          </a>
-          <a href="">
-            <time>12 de augusto</time>
-            <strong>Criando Sempre Inovações na área</strong>
-            <p>
-              Vem comigo vamos aprender a organizar e desestruturar novas
-              carreiras
-            </p>
-          </a>
+          {posts.map((post) => (
+            <a key={post.slug} href="">
+              <time>{post.updatedAt}</time>
+              <strong>{post.title}</strong>
+              <p>{post.content}</p>
+            </a>
+          ))}
         </div>
       </main>
     </>
@@ -46,13 +41,27 @@ export default function Posts() {
 export const getStaticProps: GetStaticProps = async (req) => {
   const prismic = createClient(req);
 
-  const response = await prismic.getAllByType("Posts");
+  const response = await prismic.getByType("react-posts", { pageSize: 100 });
 
-  console.log("aaaa", response);
+  const posts: Posts[] = response.results.map((post) => {
+    return {
+      slug: post.uid,
+      title: post.data.Title[0].text ?? "",
+      content: post.data.Content[0].text ?? "",
+      updatedAt: new Date(post.last_publication_date).toLocaleDateString(
+        "pt-BR",
+        {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        }
+      ),
+    };
+  });
 
   return {
     props: {
-      posts: response,
+      posts: posts,
     },
   };
 };
