@@ -1,22 +1,16 @@
 import { GetStaticProps } from "next";
 import Head from "next/head";
-import { createClient } from "../../services/prismic";
+import Link from "next/link";
+import { createPrismicClient } from "../../services/prismic";
+import { Post } from "../../types/Post";
 
 import styles from "./styles.module.scss";
 
-type Posts = {
-  slug: string;
-  title: string;
-  content: string;
-  updatedAt: string;
-};
-
 type PostsProps = {
-  posts: Posts[];
+  posts: Post[];
 };
 
 export default function Posts({ posts }: PostsProps) {
-  console.log(posts);
   return (
     <>
       <Head>
@@ -26,11 +20,13 @@ export default function Posts({ posts }: PostsProps) {
       <main className={styles.container}>
         <div className={styles.posts}>
           {posts.map((post) => (
-            <a key={post.slug} href="">
-              <time>{post.updatedAt}</time>
-              <strong>{post.title}</strong>
-              <p>{post.content}</p>
-            </a>
+            <Link key={post.slug} href={`/posts/${post.slug}`}>
+              <a>
+                <time>{post.updatedAt}</time>
+                <strong>{post.title}</strong>
+                <p>{post.content}</p>
+              </a>
+            </Link>
           ))}
         </div>
       </main>
@@ -39,15 +35,26 @@ export default function Posts({ posts }: PostsProps) {
 }
 
 export const getStaticProps: GetStaticProps = async (req) => {
-  const prismic = createClient(req);
+  const prismic = createPrismicClient(req);
 
   const response = await prismic.getByType("react-posts", { pageSize: 100 });
 
-  const posts: Posts[] = response.results.map((post) => {
+  function formatContent(content) {
+    return content
+      .find((item) => item.type === "paragraph")
+      .text.slice(0, 200)
+      .concat("...");
+  }
+
+  function formatTitle(title) {
+    return title.find((item) => item.type === "heading1").text;
+  }
+
+  const posts: Post[] = response.results.map((post) => {
     return {
       slug: post.uid,
-      title: post.data.Title[0].text ?? "",
-      content: post.data.Content[0].text ?? "",
+      title: formatTitle(post.data.Title),
+      content: formatContent(post.data.Content),
       updatedAt: new Date(post.last_publication_date).toLocaleDateString(
         "pt-BR",
         {

@@ -4,18 +4,27 @@ import { getStripeJs } from "../../services/stripe-js";
 import { toast } from "react-toastify";
 
 import styles from "./styles.module.scss";
+import { useRouter } from "next/router";
 
 type SubscribeButtonProps = {
   priceId: string;
 };
 
 export function SubscribeButton({ priceId }: SubscribeButtonProps) {
-  const { status } = useSession();
+  const { status, data } = useSession();
+  const router = useRouter();
 
   async function handleSubscribe() {
     try {
       if (status === "unauthenticated") {
         signIn("github");
+        return;
+      }
+
+      console.log(data);
+
+      if (data.activeSubscription) {
+        router.push("/posts");
         return;
       }
 
