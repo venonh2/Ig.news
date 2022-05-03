@@ -1,4 +1,4 @@
-import { GetStaticProps } from "next";
+import { GetStaticPaths, GetStaticProps } from "next";
 import { useSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
@@ -54,10 +54,21 @@ export default function PostPreview({ post }: PostPreviewProps) {
   );
 }
 
-export const getStaticPaths = () => {
+// existe mais de uma maneira de eu gerar minhas páginas estaticas
+
+export const getStaticPaths: GetStaticPaths = () => {
+  // aqui eu poderia pegar os posts mais vistos
+  // e gerar os slugs estaticos em tempo de build
+  // paths: [{params: {slug: 'introducaoddddddvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv'}}],
+  // isso aconteçe no yarn build dai
+
   return {
     paths: [],
-    fallback: "blocking",
+    fallback: "blocking", // true, false , blocking
+    // o fallback dita a regra de como o conteudo do post deve ser gerado
+    // se eu passar true, ele faz client side rendering
+    // false, se o post n tiver sido gerado de maneira estatica ainda ele me devolve um 404
+    // o blocking, faz com que ele baixe no lado do servidor o conteudo
   };
 };
 
@@ -82,5 +93,5 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     ),
   };
 
-  return { props: { post: post } };
+  return { props: { post: post }, revalidate: 60 * 30 };
 };
